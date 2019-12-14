@@ -40,7 +40,9 @@ Dependencies
 
 Configuration File
 ------------------
-The following options can be specified in a configuration file.
+The following options can be specified in a configuration file. The ``values`` in the
+``[endpoints]`` section is the only key-value pair that is mandatory. All other key-value
+pairs will be set to a default value if they are not specified in the configuration file.
 
 .. code-block:: ini
 
