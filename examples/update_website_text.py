@@ -1,17 +1,31 @@
 """
-Example script to put text on the web server at a particular endpoint.
+Example script to put messages on a web server at a particular endpoint.
+
+This example assumes that a `spectrophotometer` endpoint has been defined in
+the configuration file.
+
+Make sure the web server is running on the same computer and then open
+a web browser and go to http://127.0.0.1:1683/spectrophotometer
+
+Run this example script and watch the messages appear on the web page.
 """
-import re
-import requests           # Run: pip install requests
+from time import sleep
+from webpage_text import put
 
-host = '127.0.0.1'         # hostname or IP address of the server
-port = 1683                # port number of the server
-lab = 'spectrophotometer'  # the name of the endpoint on the server to send the text to
-text = 'Hello<br>World!'   # the text to display
-size = 200                 # font size of the text
-refresh = 0.5              # number of seconds for a web browser to wait before it automatically refreshes
+# the messages to send
+messages = [
+    '1.23456789',
+    'Multi\nline\nmessage',        # you can use \n for a new line
+    'Hello<br>World!',             # or use the <br> HTML tag for a new line
+    '-9.73&plusmn;0.05 &micro;V',  # you can use HTML characters
+    'Goodbye... &#128542;',        # and HTML symbols
+    '',
+]
 
-reply = requests.put(f'http://{host}:{port}/{lab}', json={'text': text, 'size': size, 'refresh': refresh})
-if not reply.ok:
-    matches = re.findall(r'/(\w+)</p>', reply.content.decode())
-    raise ValueError('Invalid endpoint {!r}. Must be one of: {}'.format(lab, ', '.join(matches)))
+# the name of the endpoint on the server to send the messages to
+endpoint = 'spectrophotometer'
+
+# send each message
+for message in messages:
+    put(message, endpoint)
+    sleep(5)

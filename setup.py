@@ -22,7 +22,7 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
     ],
-    install_requires=['flask', 'gevent'],
+    install_requires=['flask', 'gevent', 'requests'],
     packages=['webpage_text'],
     entry_points={
         'console_scripts': [
