@@ -93,8 +93,8 @@ you do not have to specify it since it will automatically be loaded
    webpage-text
 
 When you start the web server you will see the value of the ``host`` and ``port``
-that it is running on. You will need to know these values when you send text
-to the web server or when you visit a web page.
+that it is running on (i.e., ``http://host:port/``). You will need to know these
+values when you send text to the web server or when you visit a web page.
 
 Start the web server using the above configuration file (copy and paste to create the
 ``config.ini`` file). Open a web browser and enter the following URL
