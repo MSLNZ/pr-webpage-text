@@ -1,0 +1,3 @@
+include webpage_text/static/favicon.ico
+include webpage_text/templates/page.html
+include webpage_text/templates/page_not_found.html

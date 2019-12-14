@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Page Not Found</title>
+  <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+</head>
+<body>
+  <h2>Invalid URL</h2>
+  <p>Valid URL's are:</p>
+    {% for name in names %}
+      <p>{{ url }}{{ name }}</p>
+  {% endfor %}
+</body>
+</html>
