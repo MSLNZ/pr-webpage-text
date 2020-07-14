@@ -20,13 +20,15 @@ from flask import (
 )
 
 endpoint_dict = {}
+default_dict = {}
+
+default_endpoint = 'defaults'
 
 gevent.get_hub().NOT_ERROR += (KeyboardInterrupt,)
 
 # default values
-HOST = '127.0.0.1'
+HOST = '0.0.0.0'
 PORT = 1683
-TEXT = ''
 SIZE = 100
 REFRESH = 1.0
 
@@ -54,6 +56,11 @@ def page(name):
     return render_template('page.html', title=name, **endpoint_dict[name])
 
 
+@app.route('/'+default_endpoint, methods=['GET'])
+def defaults():
+    return default_dict
+
+
 def run(*args):
     """Run the web server.
 
@@ -62,6 +69,7 @@ def run(*args):
     """
     if not args:
         args = sys.argv[1:]
+
     parser = argparse.ArgumentParser(description='Start a web server to handle HTML requests.')
     parser.add_argument('--config', '-c', default='config.ini', help='the path to the configuration file')
     args = parser.parse_args(args)
@@ -73,25 +81,31 @@ def run(*args):
     host = ini.get('server', 'host', fallback=HOST)
     port = ini.getint('server', 'port', fallback=PORT)
     use_flask_server = ini.getboolean('server', 'use_flask_server', fallback=False)
-    text = ini.get('defaults', 'text', fallback=TEXT)
+    text = ini.get('defaults', 'text', fallback='')
     size = ini.getint('defaults', 'size', fallback=SIZE)
     refresh = ini.getfloat('defaults', 'refresh', fallback=REFRESH)
     for value in ini.get('endpoints', 'values').split(','):
-        endpoint_dict[value.strip()] = {'text': text, 'size': size, 'refresh': refresh}
+        stripped = value.strip()
+        if stripped == default_endpoint:
+            sys.exit('The name of an endpoint cannot be {!r} because this name is reserved'.format(default_endpoint))
+        endpoint_dict[stripped] = {'text': text, 'size': size, 'refresh': refresh}
+
+    default_dict['size'] = size
+    default_dict['refresh'] = refresh
 
     if use_flask_server:
         # use the development server from flask
         app.run(host=host, port=port, debug=True)
     else:
         print('Running on http://{}:{}/ (Press CTRL+C to quit)'.format(host, port))
-        server = pywsgi.WSGIServer((host, port), application=app.wsgi_app)
+        server = pywsgi.WSGIServer((host, port), application=app.wsgi_app, log=None)
         try:
             server.serve_forever()
         except KeyboardInterrupt:
             pass
 
 
-def put(text, endpoint, host=HOST, port=PORT, size=SIZE, refresh=REFRESH):
+def put(text, endpoint, host=None, port=None, size=None, refresh=None):
     """Update the text that is displayed on a web page.
 
     The URL of the web page to update follows the ``http://host:port/endpoint`` nomenclature.
@@ -111,8 +125,25 @@ def put(text, endpoint, host=HOST, port=PORT, size=SIZE, refresh=REFRESH):
     refresh : float, optional
         The number of second a web browser will wait before it automatically refreshes.
     """
-    url = 'http://{}:{}/{}'.format(host, port, endpoint.lstrip('/'))
-    reply = requests.put(url, json={'text': text, 'size': size, 'refresh': refresh})
+    h = host or HOST
+    if h == '0.0.0.0':
+        h = '127.0.0.1'
+    p = port or PORT
+    url = 'http://{}:{}/'.format(h, p)
+
+    try:
+        default = default_dict[url]
+    except KeyError:
+        default = requests.get(url+'defaults').json()
+        default_dict[url] = {'size': default['size'], 'refresh': default['refresh']}
+
+    if size is None:
+        size = default['size']
+
+    if refresh is None:
+        refresh = default['refresh']
+
+    reply = requests.put(url+endpoint.lstrip('/'), json={'text': text, 'size': size, 'refresh': refresh})
     if not reply.ok:
         matches = re.findall(r'/(\w+)</p>', reply.content.decode())
         raise ValueError('Invalid endpoint {!r}. Must be one of: {}'.format(endpoint, ', '.join(matches)))
