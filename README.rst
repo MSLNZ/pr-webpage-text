@@ -80,9 +80,9 @@ For a description of all supported command line arguments run
 
    webpage-text --help
 
-There are examples_ in the ``examples`` directory for sending a PUT_ request to the
-web server. Download_ and extract the package to run one of the examples to see the
-text on the ``spectrophotometer`` or ``joe`` endpoint to change.
+There are examples_ for sending a PUT_ request to the web server. Download_ and
+extract the package to run one of the examples to see the text on the
+``spectrophotometer`` or ``joe`` endpoint to change.
 
 Configuration File
 ------------------
