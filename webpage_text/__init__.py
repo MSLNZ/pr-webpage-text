@@ -62,38 +62,96 @@ def run(*args):
     This function is only meant to be called from the command line via the
     `webpage-text` entry point (see setup.py).
     """
+    host = '0.0.0.0'
+    text = ''
+    size = 100
+    refresh = 1.0
+    use_flask = False
+    enable_log = False
+
+    parser = argparse.ArgumentParser(description='Start a web server to display text on a web page.')
+    parser.add_argument(
+        '-c', '--config',
+        help='path to a configuration file (INI format)'
+    )
+    parser.add_argument(
+        '-H', '--host', default=host,
+        help='hostname or IP address of the server [default={}]'.format(host)
+    )
+    parser.add_argument(
+        '-p', '--port', default=PORT, type=int,
+        help='port to run the server on [default={}]'.format(PORT)
+    )
+    parser.add_argument(
+        '-e', '--endpoints', nargs='*',
+        help='the names of the URL endpoints'
+    )
+    parser.add_argument(
+        '-t', '--text', default=text, nargs='*',
+        help='initial text to display at each endpoint [default={!r}]'.format(text)
+    )
+    parser.add_argument(
+        '-s', '--size', default=size, type=int,
+        help='font size (in px) of the text [default={}]'.format(size)
+    )
+    parser.add_argument(
+        '-r', '--refresh', default=refresh, type=float,
+        help='number of seconds for a web browser to wait before automatically '
+             'refreshing the web page [default={}]'.format(refresh)
+    )
+    parser.add_argument(
+        '-l', '--log', action='store_true', help='show INFO log messages from the gevent WSGI server'
+    )
+    parser.add_argument(
+        '-f', '--flask', action='store_true', help='use the flask development server in debug mode'
+    )
+
     if not args:
         args = sys.argv[1:]
-
-    parser = argparse.ArgumentParser(description='Start a web server to handle HTML requests.')
-    parser.add_argument('--config', '-c', default='config.ini', help='the path to the configuration file')
     args = parser.parse_args(args)
-    if not os.path.isfile(args.config):
-        sys.exit('FileNotFoundError: ' + args.config)
 
-    ini = configparser.ConfigParser()
-    ini.read(args.config)
-    host = ini.get('server', 'host', fallback='0.0.0.0')
-    port = ini.getint('server', 'port', fallback=PORT)
-    use_flask_server = ini.getboolean('server', 'use_flask_server', fallback=False)
-    text = ini.get('defaults', 'text', fallback='')
-    size = ini.getint('defaults', 'size', fallback=100)
-    refresh = ini.getfloat('defaults', 'refresh', fallback=1.0)
-    for value in ini.get('endpoints', 'values').split(','):
-        stripped = value.strip()
-        if stripped == default_endpoint:
+    if args.config is not None:
+        if not os.path.isfile(args.config):
+            sys.exit('FileNotFoundError: ' + args.config)
+        ini = configparser.ConfigParser()
+        ini.read(args.config)
+        host = ini.get('server', 'host', fallback=host)
+        port = ini.getint('server', 'port', fallback=PORT)
+        endpoints = [e.strip() for e in ini.get('server', 'endpoints', fallback='').split(',') if e.strip()]
+        use_flask = ini.getboolean('server', 'use_flask', fallback=use_flask)
+        enable_log = ini.getboolean('server', 'enable_log', fallback=enable_log)
+        text = ini.get('text', 'initial', fallback=text)
+        size = ini.getint('text', 'size', fallback=size)
+        refresh = ini.getfloat('text', 'refresh', fallback=refresh)
+    else:
+        host = args.host
+        port = args.port
+        endpoints = args.endpoints
+        use_flask = args.flask
+        enable_log = args.log
+        text = ' '.join(args.text) if args.text else args.text
+        size = args.size
+        refresh = args.refresh
+
+    if not endpoints:
+        sys.exit('You must specify at least 1 endpoint')
+
+    for endpoint in endpoints:
+        if endpoint == default_endpoint:
             sys.exit('The name of an endpoint cannot be {!r} because this name is reserved'.format(default_endpoint))
-        endpoint_dict[stripped] = {'text': text, 'size': size, 'refresh': refresh}
+        print('Added endpoint http://{}:{}/{}'.format(host, port, endpoint))
+        endpoint_dict[endpoint] = {'text': text, 'size': size, 'refresh': refresh}
 
     default_dict['size'] = size
     default_dict['refresh'] = refresh
 
-    if use_flask_server:
+    if use_flask:
         # use the development server from flask
         app.run(host=host, port=port, debug=True)
     else:
-        print('Running on http://{}:{}/ (Press CTRL+C to quit)'.format(host, port))
-        server = pywsgi.WSGIServer((host, port), application=app.wsgi_app, log=None)
+        print('Server running on http://{}:{}/ (Press CTRL+C to quit)'.format(host, port))
+        log = 'default' if enable_log else None
+        server = pywsgi.WSGIServer((host, port), application=app.wsgi_app, log=log)
         try:
             server.serve_forever()
         except KeyboardInterrupt:
