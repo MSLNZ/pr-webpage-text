@@ -183,7 +183,7 @@ def put(text, endpoint, host='127.0.0.1', port=PORT, size=None, refresh=None):
     try:
         default = default_dict[url]
     except KeyError:
-        default = requests.get(url+'defaults').json()
+        default = requests.get(url+default_endpoint).json()
         default_dict[url] = {'size': default['size'], 'refresh': default['refresh']}
 
     if size is None:
