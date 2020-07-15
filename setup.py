@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='webpage_text',
-    version='0.1.0.dev0',
+    version='0.1.0',
     author='Joseph Borbely',
     author_email='joseph.borbely@measurement.govt.nz',
     url='https://github.com/MSLNZ/pr-webpage-text',
