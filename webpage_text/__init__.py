@@ -1,7 +1,6 @@
 import os
 import re
 import sys
-import json
 import argparse
 import configparser
 
@@ -19,18 +18,14 @@ from flask import (
     send_from_directory,
 )
 
+gevent.get_hub().NOT_ERROR += (KeyboardInterrupt,)
+
+PORT = 1683
+
 endpoint_dict = {}
 default_dict = {}
 
 default_endpoint = 'defaults'
-
-gevent.get_hub().NOT_ERROR += (KeyboardInterrupt,)
-
-# default values
-HOST = '0.0.0.0'
-PORT = 1683
-SIZE = 100
-REFRESH = 1.0
 
 app = Flask(__name__)
 
@@ -50,7 +45,7 @@ def page(name):
     if name not in endpoint_dict:
         return page_not_found()
     if request.method == 'PUT':
-        data = json.loads(request.data)
+        data = request.json
         data['text'] = Markup(re.sub(r'\n|\\n', '<br>', data['text']))
         endpoint_dict[name].update(data)
     return render_template('page.html', title=name, **endpoint_dict[name])
@@ -78,12 +73,12 @@ def run(*args):
 
     ini = configparser.ConfigParser()
     ini.read(args.config)
-    host = ini.get('server', 'host', fallback=HOST)
+    host = ini.get('server', 'host', fallback='0.0.0.0')
     port = ini.getint('server', 'port', fallback=PORT)
     use_flask_server = ini.getboolean('server', 'use_flask_server', fallback=False)
     text = ini.get('defaults', 'text', fallback='')
-    size = ini.getint('defaults', 'size', fallback=SIZE)
-    refresh = ini.getfloat('defaults', 'refresh', fallback=REFRESH)
+    size = ini.getint('defaults', 'size', fallback=100)
+    refresh = ini.getfloat('defaults', 'refresh', fallback=1.0)
     for value in ini.get('endpoints', 'values').split(','):
         stripped = value.strip()
         if stripped == default_endpoint:
@@ -105,7 +100,7 @@ def run(*args):
             pass
 
 
-def put(text, endpoint, host=None, port=None, size=None, refresh=None):
+def put(text, endpoint, host='127.0.0.1', port=PORT, size=None, refresh=None):
     """Update the text that is displayed on a web page.
 
     The URL of the web page to update follows the ``http://host:port/endpoint`` nomenclature.
@@ -125,11 +120,7 @@ def put(text, endpoint, host=None, port=None, size=None, refresh=None):
     refresh : float, optional
         The number of second a web browser will wait before it automatically refreshes.
     """
-    h = host or HOST
-    if h == '0.0.0.0':
-        h = '127.0.0.1'
-    p = port or PORT
-    url = 'http://{}:{}/'.format(h, p)
+    url = 'http://{}:{}/'.format(host, port)
 
     try:
         default = default_dict[url]
