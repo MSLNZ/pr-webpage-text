@@ -71,7 +71,7 @@ request must be a JSON_ object with the following structure
    {
      'text': string,    # the text to display on the web page
      'size': integer,   # the font size (in px) of the text
-     'refresh': float,  # how often (in seconds) the web browser will automatically refresh
+     'refresh': float,  # how often (in seconds) the web page will automatically refresh
    }
 
 For a description of all supported command line arguments run
