@@ -1,8 +1,8 @@
 """
 Example script to put messages on a web server at a particular endpoint.
 
-This example assumes that a `spectrophotometer` endpoint has been defined in
-the configuration file.
+This example assumes that a `spectrophotometer` endpoint is available
+on the web server.
 
 Make sure the web server is running on the same computer and then open
 a web browser and go to http://127.0.0.1:1683/spectrophotometer
@@ -10,6 +10,7 @@ a web browser and go to http://127.0.0.1:1683/spectrophotometer
 Run this example script and watch the messages appear on the web page.
 """
 from time import sleep
+
 from webpage_text import put
 
 # the messages to send
