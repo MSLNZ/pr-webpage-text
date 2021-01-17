@@ -1,13 +1,18 @@
 """
-Example script to put messages on a web server at a particular endpoint.
+Example script to PUT messages to a web server at a particular endpoint.
 
 This example assumes that a `spectrophotometer` endpoint is available
 on the web server.
 
-Make sure the web server is running on the same computer and then open
-a web browser and go to http://127.0.0.1:1683/spectrophotometer
+Make sure a web server is running on the same computer, for example,
 
-Run this example script and watch the messages appear on the web page.
+.. code-block:: console
+
+   webpage-text --endpoints spectrophotometer --host 127.0.0.1
+
+and then open a web browser and go to http://127.0.0.1:1683/spectrophotometer
+
+Run this example script and then watch the messages appear on the web page.
 """
 from time import sleep
 
