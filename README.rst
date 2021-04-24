@@ -26,7 +26,7 @@ To install the package run
 
 .. code-block:: console
 
-   pip install https://github.com/MSLNZ/pr-webpage-text/archive/master.zip
+   pip install https://github.com/MSLNZ/pr-webpage-text/archive/main.zip
 
 Alternatively, using the `MSL Package Manager`_
 
@@ -139,5 +139,5 @@ in the configuration file.
 .. _gevent: https://pypi.org/project/gevent/
 .. _requests: https://pypi.org/project/requests/
 .. _JSON: https://www.json.org/json-en.html
-.. _examples: https://github.com/MSLNZ/pr-webpage-text/tree/master/examples
-.. _Download: https://github.com/MSLNZ/pr-webpage-text/archive/master.zip
+.. _examples: https://github.com/MSLNZ/pr-webpage-text/tree/main/examples
+.. _Download: https://github.com/MSLNZ/pr-webpage-text/archive/main.zip
